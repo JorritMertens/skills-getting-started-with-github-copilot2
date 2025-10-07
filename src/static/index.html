@@ -21,9 +21,10 @@
             id="search" 
             placeholder="Search activities by name or description..." 
             class="search-input"
+            aria-label="Search activities"
           />
         </div>
-        <div id="activities-list">
+        <div id="activities-list" role="region" aria-live="polite">
           <!-- Activities will be loaded here -->
           <p>Loading activities...</p>
         </div>
@@ -34,18 +35,26 @@
         <form id="signup-form">
           <div class="form-group">
             <label for="email">Student Email:</label>
-            <input type="email" id="email" required placeholder="your-email@mergington.edu" />
+            <input 
+              type="email" 
+              id="email" 
+              required 
+              placeholder="your-email@mergington.edu"
+              pattern="[a-zA-Z0-9._%+\-]+@mergington\\.edu"
+              title="Must be a valid @mergington.edu email address"
+              aria-label="Student email address"
+            />
           </div>
           <div class="form-group">
             <label for="activity">Select Activity:</label>
-            <select id="activity" required>
+            <select id="activity" required aria-label="Select activity">
               <option value="">-- Select an activity --</option>
               <!-- Activity options will be loaded here -->
             </select>
           </div>
           <button type="submit">Sign Up</button>
         </form>
-        <div id="message" class="hidden"></div>
+        <div id="message" class="hidden" role="alert" aria-live="polite"></div>
       </section>
     </main>
 

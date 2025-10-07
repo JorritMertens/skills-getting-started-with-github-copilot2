@@ -23,6 +23,12 @@ document.addEventListener("DOMContentLoaded", () => {
         : "/activities";
       
       const response = await fetch(url);
+      
+      // Check if response is ok before parsing
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const activities = await response.json();
       currentActivities = activities;
 
@@ -44,13 +50,32 @@ document.addEventListener("DOMContentLoaded", () => {
         const spotsLeft = details.max_participants - details.participants.length;
         const isFull = spotsLeft === 0;
 
-        activityCard.innerHTML = `
-          <h4>${name}</h4>
-          <p>${details.description}</p>
-          <p><strong>Schedule:</strong> ${details.schedule}</p>
-          <p><strong>Availability:</strong> ${spotsLeft} spots left ${isFull ? '(FULL)' : ''}</p>
-          <button class="view-participants-btn" data-activity="${name}">View Participants</button>
-        `;
+        // Create elements safely to prevent XSS
+        const h4 = document.createElement("h4");
+        h4.textContent = name;
+        
+        const descP = document.createElement("p");
+        descP.textContent = details.description;
+        
+        const scheduleP = document.createElement("p");
+        scheduleP.innerHTML = `<strong>Schedule:</strong> `;
+        scheduleP.appendChild(document.createTextNode(details.schedule));
+        
+        const availP = document.createElement("p");
+        availP.innerHTML = `<strong>Availability:</strong> `;
+        availP.appendChild(document.createTextNode(`${spotsLeft} spots left ${isFull ? '(FULL)' : ''}`));
+        
+        const viewBtn = document.createElement("button");
+        viewBtn.className = "view-participants-btn";
+        viewBtn.textContent = "View Participants";
+        viewBtn.dataset.activity = name;
+        viewBtn.addEventListener("click", () => viewParticipants(name));
+
+        activityCard.appendChild(h4);
+        activityCard.appendChild(descP);
+        activityCard.appendChild(scheduleP);
+        activityCard.appendChild(availP);
+        activityCard.appendChild(viewBtn);
 
         if (isFull) {
           activityCard.classList.add("full");
@@ -66,11 +91,6 @@ document.addEventListener("DOMContentLoaded", () => {
           activitySelect.appendChild(option);
         }
       });
-
-      // Add event listeners for view participants buttons
-      document.querySelectorAll(".view-participants-btn").forEach(btn => {
-        btn.addEventListener("click", () => viewParticipants(btn.dataset.activity));
-      });
     } catch (error) {
       activitiesList.innerHTML = "<p>Failed to load activities. Please try again later.</p>";
       console.error("Error fetching activities:", error);
@@ -81,17 +101,41 @@ document.addEventListener("DOMContentLoaded", () => {
   async function viewParticipants(activityName) {
     try {
       const response = await fetch(`/activities/${encodeURIComponent(activityName)}/participants`);
+      
+      // Check if response is ok before parsing
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const data = await response.json();
 
-      const participantsList = data.participants.length > 0
-        ? data.participants.map(email => `<li>${email}</li>`).join("")
-        : "<li>No participants yet</li>";
-
-      messageDiv.innerHTML = `
-        <h4>Participants for ${data.activity}</h4>
-        <p>${data.count} / ${data.max_participants} spots filled</p>
-        <ul class="participants-list">${participantsList}</ul>
-      `;
+      // Create participant list safely to prevent XSS
+      messageDiv.innerHTML = "";
+      
+      const h4 = document.createElement("h4");
+      h4.textContent = `Participants for ${data.activity}`;
+      
+      const countP = document.createElement("p");
+      countP.textContent = `${data.count} / ${data.max_participants} spots filled`;
+      
+      const ul = document.createElement("ul");
+      ul.className = "participants-list";
+      
+      if (data.participants.length > 0) {
+        data.participants.forEach(email => {
+          const li = document.createElement("li");
+          li.textContent = email;
+          ul.appendChild(li);
+        });
+      } else {
+        const li = document.createElement("li");
+        li.textContent = "No participants yet";
+        ul.appendChild(li);
+      }
+      
+      messageDiv.appendChild(h4);
+      messageDiv.appendChild(countP);
+      messageDiv.appendChild(ul);
       messageDiv.className = "info";
       messageDiv.classList.remove("hidden");
 
@@ -121,8 +165,14 @@ document.addEventListener("DOMContentLoaded", () => {
   signupForm.addEventListener("submit", async (event) => {
     event.preventDefault();
 
-    const email = document.getElementById("email").value;
+    const email = document.getElementById("email").value.trim();
     const activity = document.getElementById("activity").value;
+
+    // Validate activity selection
+    if (!activity) {
+      showMessage("Please select an activity", "error");
+      return;
+    }
 
     // Basic email validation
     if (!email.endsWith("@mergington.edu")) {
@@ -149,7 +199,7 @@ document.addEventListener("DOMContentLoaded", () => {
         showMessage(result.message, "success");
         signupForm.reset();
         // Refresh activities to show updated spots
-        await fetchActivities(searchInput.value);
+        await fetchActivities(searchInput ? searchInput.value : "");
       } else {
         showMessage(result.detail || "An error occurred", "error");
       }
