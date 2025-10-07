@@ -136,6 +136,63 @@ button:hover {
   display: none;
 }
 
+.search-container {
+  margin-bottom: 20px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #1a237e;
+  box-shadow: 0 0 0 2px rgba(26, 35, 126, 0.1);
+}
+
+.view-participants-btn {
+  margin-top: 10px;
+  padding: 8px 12px;
+  font-size: 14px;
+  background-color: #0066cc;
+}
+
+.view-participants-btn:hover {
+  background-color: #0052a3;
+}
+
+.activity-card.full {
+  opacity: 0.7;
+  background-color: #f0f0f0;
+}
+
+.activity-card.full h4 {
+  color: #999;
+}
+
+.participants-list {
+  margin-top: 10px;
+  padding-left: 20px;
+  list-style-type: disc;
+}
+
+.participants-list li {
+  margin-bottom: 5px;
+}
+
+button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+button:disabled:hover {
+  background-color: #ccc;
+}
+
 footer {
   text-align: center;
   margin-top: 30px;
