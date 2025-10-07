@@ -8,8 +8,7 @@ for extracurricular activities at Mergington High School.
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
-from pydantic import BaseModel, EmailStr, validator
-from typing import List, Optional
+from typing import Optional
 import os
 import re
 from pathlib import Path
@@ -83,6 +82,16 @@ def get_activity_participants(activity_name: str):
 @app.post("/activities/{activity_name}/signup")
 def signup_for_activity(activity_name: str, email: str):
     """Sign up a student for an activity"""
+    # Validate inputs
+    if not activity_name or not activity_name.strip():
+        raise HTTPException(status_code=400, detail="Activity name is required")
+    
+    if not email or not email.strip():
+        raise HTTPException(status_code=400, detail="Email is required")
+    
+    # Normalize inputs
+    email = email.strip().lower()
+    
     # Validate activity exists
     if activity_name not in activities:
         raise HTTPException(status_code=404, detail="Activity not found")
@@ -113,6 +122,16 @@ def signup_for_activity(activity_name: str, email: str):
 @app.delete("/activities/{activity_name}/signup")
 def unsign_from_activity(activity_name: str, email: str):
     """Remove a student from an activity"""
+    # Validate inputs
+    if not activity_name or not activity_name.strip():
+        raise HTTPException(status_code=400, detail="Activity name is required")
+    
+    if not email or not email.strip():
+        raise HTTPException(status_code=400, detail="Email is required")
+    
+    # Normalize inputs
+    email = email.strip().lower()
+    
     # Validate activity exists
     if activity_name not in activities:
         raise HTTPException(status_code=404, detail="Activity not found")
